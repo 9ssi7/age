@@ -3,53 +3,60 @@ package age
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/9ssi7/age/parser"
 	"github.com/antlr4-go/antlr/v4"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
-type AGMapper struct {
+type Mapper struct {
 	AGUnmarshaler
 }
 
-func NewAGMapper(typeMap map[string]reflect.Type) *AGMapper {
+func NewMapper(typeMap map[string]reflect.Type) *Mapper {
 	vcache := make(map[int64]interface{})
 	if typeMap == nil {
 		typeMap = make(map[string]reflect.Type)
 	}
 	m := AGUnmarshaler{ageParser: parser.NewAgeParser(nil),
-		visitor: &MapperVisitor{UnmarshalVisitor: UnmarshalVisitor{vcache: vcache},
+		visitor: &Visitor{UnmarshalVisitor: UnmarshalVisitor{vcache: vcache},
 			typeMap: typeMap},
 		errListener: NewAGErrorListener(),
 		vcache:      vcache,
 	}
 
-	agm := &AGMapper{AGUnmarshaler: m}
+	agm := &Mapper{AGUnmarshaler: m}
 	agm.ageParser.AddErrorListener(agm.errListener)
 
 	return agm
 }
 
-func (m *AGMapper) PutType(label string, tp reflect.Type) {
-	m.visitor.(*MapperVisitor).PutType(label, tp)
+// Add a type to the Mapper
+// label: the label of the type
+// tp: the type of the struct
+// example:
+//
+//	Mapper.PutType("Person", VPerson{})
+func (m *Mapper) PutType(label string, val interface{}) {
+	m.visitor.(*Visitor).PutType(label, reflect.TypeOf(val))
 }
 
-type MapperVisitor struct {
+type Visitor struct {
 	UnmarshalVisitor
 	typeMap map[string]reflect.Type
 }
 
-func (v *MapperVisitor) PutType(label string, tp reflect.Type) {
+func (v *Visitor) PutType(label string, tp reflect.Type) {
 	v.typeMap[label] = tp
 }
 
-func (v *MapperVisitor) VisitAgeout(ctx *parser.AgeoutContext) interface{} {
+func (v *Visitor) VisitAgeout(ctx *parser.AgeoutContext) interface{} {
 	rtn := v.VisitChildren(ctx)
 	return rtn
 }
 
-func (v *MapperVisitor) VisitChildren(node antlr.RuleNode) interface{} {
+func (v *Visitor) VisitChildren(node antlr.RuleNode) interface{} {
 	var rtn interface{}
 	for _, c := range node.GetChildren() {
 		pt := c.(antlr.ParseTree)
@@ -58,7 +65,7 @@ func (v *MapperVisitor) VisitChildren(node antlr.RuleNode) interface{} {
 	return rtn
 }
 
-func (v *MapperVisitor) VisitPath(ctx *parser.PathContext) interface{} {
+func (v *Visitor) VisitPath(ctx *parser.PathContext) interface{} {
 	entities := []interface{}{}
 
 	for _, child := range ctx.GetChildren() {
@@ -84,7 +91,7 @@ func (v *MapperVisitor) VisitPath(ctx *parser.PathContext) interface{} {
 	return path
 }
 
-func (v *MapperVisitor) VisitVertex(ctx *parser.VertexContext) interface{} {
+func (v *Visitor) VisitVertex(ctx *parser.VertexContext) interface{} {
 	propCtx := ctx.Properties()
 	props := propCtx.Accept(v).(map[string]interface{})
 	vid := int64(props["id"].(int64))
@@ -104,7 +111,7 @@ func (v *MapperVisitor) VisitVertex(ctx *parser.VertexContext) interface{} {
 }
 
 // Visit a parse tree produced by AgeParser#edge.
-func (v *MapperVisitor) VisitEdge(ctx *parser.EdgeContext) interface{} {
+func (v *Visitor) VisitEdge(ctx *parser.EdgeContext) interface{} {
 	propCtx := ctx.Properties()
 	props := propCtx.Accept(v).(map[string]interface{})
 	vid := props["id"].(int64)
@@ -123,7 +130,7 @@ func (v *MapperVisitor) VisitEdge(ctx *parser.EdgeContext) interface{} {
 	return edge
 }
 
-func (v *MapperVisitor) mapVertex(vid int64, label string, properties map[string]interface{}) (interface{}, error) {
+func (v *Visitor) mapVertex(vid int64, label string, properties map[string]interface{}) (interface{}, error) {
 	tp, ok := v.typeMap[label]
 
 	if !ok {
@@ -133,7 +140,7 @@ func (v *MapperVisitor) mapVertex(vid int64, label string, properties map[string
 	return mapStruct(tp, properties)
 }
 
-func (v *MapperVisitor) mapEdge(vid int64, label string, start int64, end int64, properties map[string]interface{}) (interface{}, error) {
+func (v *Visitor) mapEdge(vid int64, label string, start int64, end int64, properties map[string]interface{}) (interface{}, error) {
 	tp, ok := v.typeMap[label]
 
 	if !ok {
@@ -147,7 +154,7 @@ func mapStruct(tp reflect.Type, properties map[string]interface{}) (interface{},
 	value := reflect.New(tp).Elem()
 
 	for k, v := range properties {
-		k = strings.Title(k)
+		k = cases.Title(language.English).String(k)
 		f, ok := tp.FieldByName(k)
 		if ok {
 			field := value.FieldByIndex(f.Index)
@@ -155,7 +162,7 @@ func mapStruct(tp reflect.Type, properties map[string]interface{}) (interface{},
 			if field.Type().ConvertibleTo(val.Type()) {
 				field.Set(val)
 			} else {
-				return nil, fmt.Errorf("Property[%s] value[%v] type is not convertable to %v", k, v, field.Type())
+				return nil, fmt.Errorf("property[%s] value[%v] type is not convertable to %v", k, v, field.Type())
 			}
 		}
 	}

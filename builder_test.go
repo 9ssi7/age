@@ -24,9 +24,9 @@ func TestPathParsing(t *testing.T) {
 	{"id": 2251799813685426, "label": "Person", "properties": {"name": "Jack", "arrVal":["A","B"]}}::vertex]::path`
 
 	unmarshaler := NewAGUnmarshaler()
-	entity1, _ := unmarshaler.unmarshal(rstStr1)
-	entity2, _ := unmarshaler.unmarshal(rstStr2)
-	entity3, _ := unmarshaler.unmarshal(rstStr3)
+	entity1, _ := unmarshaler.Unmarshal(rstStr1)
+	entity2, _ := unmarshaler.Unmarshal(rstStr2)
+	entity3, _ := unmarshaler.Unmarshal(rstStr3)
 
 	assert.Equal(t, entity1.GType(), entity2.GType(), "Type Check")
 	p1 := entity1.(*Path)
@@ -54,7 +54,7 @@ func TestVertexParsing(t *testing.T) {
 		"yn":true, "nullVal": null}}::vertex`
 
 	unmarshaler := NewAGUnmarshaler()
-	entity, _ := unmarshaler.unmarshal(rstStr)
+	entity, _ := unmarshaler.Unmarshal(rstStr)
 
 	// fmt.Println(entity)
 	assert.Equal(t, G_VERTEX, entity.GType())
@@ -93,19 +93,19 @@ func TestNormalValueParsing(t *testing.T) {
 	infnStr := "-Infinity"
 
 	unmarshaler := NewAGUnmarshaler()
-	mapv, _ := unmarshaler.unmarshal(mapStr)
-	arrv, _ := unmarshaler.unmarshal(arrStr)
-	str2, _ := unmarshaler.unmarshal(strStr)
-	intv, _ := unmarshaler.unmarshal(intStr)
-	fl, _ := unmarshaler.unmarshal(floatStr)
-	fl2, _ := unmarshaler.unmarshal(floatStr2)
-	numeric1, _ := unmarshaler.unmarshal(numericStr1)
-	numeric2, _ := unmarshaler.unmarshal(numericStr2)
-	b, _ := unmarshaler.unmarshal(boolStr)
-	nullVal, _ := unmarshaler.unmarshal(nullStr)
-	nanVal, _ := unmarshaler.unmarshal(nanStr)
-	infpVal, _ := unmarshaler.unmarshal(infpStr)
-	infnVal, _ := unmarshaler.unmarshal(infnStr)
+	mapv, _ := unmarshaler.Unmarshal(mapStr)
+	arrv, _ := unmarshaler.Unmarshal(arrStr)
+	str2, _ := unmarshaler.Unmarshal(strStr)
+	intv, _ := unmarshaler.Unmarshal(intStr)
+	fl, _ := unmarshaler.Unmarshal(floatStr)
+	fl2, _ := unmarshaler.Unmarshal(floatStr2)
+	numeric1, _ := unmarshaler.Unmarshal(numericStr1)
+	numeric2, _ := unmarshaler.Unmarshal(numericStr2)
+	b, _ := unmarshaler.Unmarshal(boolStr)
+	nullVal, _ := unmarshaler.Unmarshal(nullStr)
+	nanVal, _ := unmarshaler.Unmarshal(nanStr)
+	infpVal, _ := unmarshaler.Unmarshal(infpStr)
+	infnVal, _ := unmarshaler.Unmarshal(infnStr)
 
 	// fmt.Println("intv", intv.GType(), reflect.TypeOf(intv.(*SimpleEntity).Value()), intv)
 	assert.Equal(t, G_MAP, mapv.GType())
@@ -149,7 +149,7 @@ func TestMap(t *testing.T) {
 	mapStr := `{"name": "Smith", "num":123, "yn":true, "arr":["A","B",1], "map":{"a":1, "b":"bv"}}`
 
 	unmarshaler := NewAGUnmarshaler()
-	mapv, _ := unmarshaler.unmarshal(mapStr)
+	mapv, _ := unmarshaler.Unmarshal(mapStr)
 	assert.Equal(t, G_MAP, mapv.GType())
 
 	mapValue := mapv.(*SimpleEntity).Value().(map[string]interface{})
@@ -163,7 +163,7 @@ func TestArray(t *testing.T) {
 	arrayStr := `[ "Smith", 123,  true, ["A","B",1], {"a":1, "b":"bv"}]`
 
 	unmarshaler := NewAGUnmarshaler()
-	arrayv, _ := unmarshaler.unmarshal(arrayStr)
+	arrayv, _ := unmarshaler.Unmarshal(arrayStr)
 	assert.Equal(t, G_ARR, arrayv.GType())
 
 	arrValue := arrayv.(*SimpleEntity).Value().([]interface{})

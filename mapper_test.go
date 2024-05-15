@@ -31,13 +31,13 @@ func TestPathMapping(t *testing.T) {
 	{"id": 2533274790396579, "label": "workWith", "end_id": 2251799813685426, "start_id": 2251799813685424, "properties": {"weight": 5}}::edge, 
 	{"id": 2251799813685426, "label": "Person", "properties": {"name": "Jack"}}::vertex]::path`
 
-	mapper := NewAGMapper(nil)
+	mapper := NewMapper(nil)
 	mapper.PutType("Person", reflect.TypeOf(VPerson{}))
 	mapper.PutType("workWith", reflect.TypeOf(EWorkWith{}))
 
-	entity1, _ := mapper.unmarshal(rstStr1)
-	entity2, _ := mapper.unmarshal(rstStr2)
-	entity3, _ := mapper.unmarshal(rstStr3)
+	entity1, _ := mapper.Unmarshal(rstStr1)
+	entity2, _ := mapper.Unmarshal(rstStr2)
+	entity3, _ := mapper.Unmarshal(rstStr3)
 
 	fmt.Println(" **** ", entity1)
 	fmt.Println(" **** ", entity2)

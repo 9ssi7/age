@@ -230,7 +230,7 @@ func (c *CypherCursor) GetRow() ([]Entity, error) {
 	entArr := make([]Entity, c.columnCount)
 	for i := 0; i < c.columnCount; i++ {
 		gstr := gstrs[i].(*string)
-		e, err := c.unmarshaler.unmarshal(*gstr)
+		e, err := c.unmarshaler.Unmarshal(*gstr)
 		if err != nil {
 			fmt.Println(i, ">>", gstr)
 			return nil, err
@@ -247,11 +247,11 @@ func (c *CypherCursor) Close() error {
 
 type CypherMapCursor struct {
 	CypherCursor
-	mapper *AGMapper
+	mapper *Mapper
 }
 
 func NewCypherMapCursor(columnCount int, rows *sql.Rows) Cursor {
-	mapper := NewAGMapper(make(map[string]reflect.Type))
+	mapper := NewMapper(make(map[string]reflect.Type))
 	pcursor := CypherCursor{columnCount: columnCount, rows: rows, unmarshaler: mapper}
 	return &CypherMapCursor{CypherCursor: pcursor, mapper: mapper}
 }

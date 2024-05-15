@@ -283,6 +283,15 @@ func (e *MapPath) Get(index int) interface{} {
 	return e.entities[index]
 }
 
+func (e *MapPath) GetAs(index int, val interface{}) {
+	v := e.Get(index)
+	rv := reflect.ValueOf(val)
+	if rv.Kind() != reflect.Ptr {
+		panic(fmt.Errorf("Value must be a pointer"))
+	}
+	rv.Elem().Set(reflect.ValueOf(v))
+}
+
 func (p *MapPath) String() string {
 	var buf bytes.Buffer
 	buf.WriteString("P[")

@@ -17,7 +17,7 @@ const MinUint = 0
 const MinInt = -MaxInt - 1
 
 type Unmarshaller interface {
-	unmarshal(text string) (Entity, error)
+	Unmarshal(text string) (Entity, error)
 }
 
 type AGUnmarshaler struct {
@@ -41,7 +41,7 @@ func NewAGUnmarshaler() *AGUnmarshaler {
 	return m
 }
 
-func (p *AGUnmarshaler) unmarshal(text string) (Entity, error) {
+func (p *AGUnmarshaler) Unmarshal(text string) (Entity, error) {
 	if len(text) == 0 {
 		return NewSimpleEntity(nil), nil
 	}
